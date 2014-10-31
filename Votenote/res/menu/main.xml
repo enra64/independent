@@ -15,5 +15,9 @@
         android:id="@+id/action_groupmanagement"
         android:showAsAction="never"
         android:title="Übungen verwalten"/>
+        <item
+        android:id="@+id/action_prespoints"
+        android:showAsAction="never"
+        android:title="Punkte verwalten"/>
 
 </menu>

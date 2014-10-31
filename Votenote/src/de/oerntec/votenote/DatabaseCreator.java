@@ -37,13 +37,15 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     public static final String GROUPS_ID="_id";
     public static final String GROUPS_NAMEN="uebung_name";
     public static final String GROUPS_MIN_VOTE="uebung_minvote";
+    public static final String GROUPS_PRESENTATIONPOINTS="uebung_prespoints";
     
     public static final String TABLE_GROUPS="uebungen_gruppen";
     
     private static final String CREATE_DATABASE_GROUPS = 
     		"create table "+TABLE_GROUPS+"( "+GROUPS_ID+" integer primary key," +
     		GROUPS_NAMEN+" string not null," +
-    		GROUPS_MIN_VOTE+" integer DEFAULT 50);";
+    		GROUPS_MIN_VOTE+" integer DEFAULT 50,"+
+    		GROUPS_PRESENTATIONPOINTS + "integer DEFAULT 0);";
 
     public DatabaseCreator(Context context) {
         super(context, DATABASE, null, DATABASE_VERSION);

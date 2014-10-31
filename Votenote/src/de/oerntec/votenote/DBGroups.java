@@ -245,5 +245,10 @@ public class DBGroups{
 
 		deleteRecord(deleteName, deleteId);
 	}
+
+	public int getPresPoints(int position) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 

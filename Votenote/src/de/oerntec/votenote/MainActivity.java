@@ -126,24 +126,30 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int translatedPosition=groupDB.translateDrawerSelectionToDBID(mCurrentSelectedPosition);
 		
-		//open groupmanagement activity
-		if (item.getItemId() == R.id.action_groupmanagement){
-			Intent intent = new Intent(this, GroupManagementActivity.class);
-			startActivity(intent);
-		}
-		
-		//add a group
-		if (item.getItemId() == R.id.action_add_group) 
-			createGroupDialog(this, false);
-		
-		//add entry to current group
-		if (item.getItemId() == R.id.action_add_entry) {
-			createEntryDialog(translatedPosition, true, 0);
-			return true;
+		switch(item.getItemId()){
+			case R.id.action_groupmanagement:
+				Intent intent = new Intent(this, GroupManagementActivity.class);
+				startActivity(intent);
+				break;
+			case R.id.action_add_group:
+				createGroupDialog(this, false);
+				break;
+			case R.id.action_add_entry:
+				createEntryDialog(translatedPosition, true, 0);
+				break;
+			case R.id.action_prespoints:
+				createPresPointsDialog(translatedPosition);
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
+	private void createPresPointsDialog(int position) {
+		final View inputView=this.getLayoutInflater().inflate(R.layout.dialog_changeprespoints, null);
+		final TextView presPointsView=(TextView) inputView.findViewById(R.id.prespointView);
+		presPointsView.setText(groupDB.getPresPoints(position));
+	}
+
 	/**
 	 * Creates the Dialog responsible for asking the user the name
 	 * @param context Context to use
