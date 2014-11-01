@@ -17,11 +17,19 @@
     </ListView>
 
     <TextView
-        android:id="@+id/voteAverage"
+        android:id="@+id/mainPrespointView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentTop="false"
+        android:layout_centerHorizontal="true"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/voteAverage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/mainPrespointView"
         android:layout_centerHorizontal="true"
         android:text="test"
         android:textAppearance="?android:attr/textAppearanceLarge"
