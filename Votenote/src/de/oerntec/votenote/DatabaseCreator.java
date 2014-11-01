@@ -8,7 +8,7 @@ import android.util.Log;
 public class DatabaseCreator extends SQLiteOpenHelper {
     private static final String DATABASE = "uebungen";
     
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     /* Database creation sql statement
      * We need
