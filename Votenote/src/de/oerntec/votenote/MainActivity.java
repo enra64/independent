@@ -154,15 +154,15 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 		plusButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				int prevValue=Integer.getInteger(presPointsView.getText().toString());
-				presPointsView.setText(prevValue+1);
+				int prevValue=Integer.valueOf(presPointsView.getText().toString());
+				presPointsView.setText(String.valueOf(prevValue+1));
 			}
 		});
 		minusButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				int prevValue=Integer.getInteger(presPointsView.getText().toString());
-				presPointsView.setText(prevValue-1);
+				int prevValue=Integer.valueOf(presPointsView.getText().toString());
+				presPointsView.setText(String.valueOf(prevValue-1));
 			}
 		});
 		//build alertdialog
@@ -170,9 +170,9 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	    .setView(inputView)
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
-	            int presPoints=Integer.getInteger(presPointsView.getText().toString());
+	        	String presPointsString=presPointsView.getText().toString();
+	            int presPoints=Integer.valueOf(presPointsString);
 	            groupDB.setPresPoints(dataBaseId, presPoints);
-	            mNavigationDrawerFragment.forceReload();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
 	    });
