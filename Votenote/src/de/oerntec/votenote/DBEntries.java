@@ -136,15 +136,15 @@ public Cursor getAllRecords(){
 	return mCursor; // iterate to get each value.
 }
 
-public int getPrevMaxVote(int group){
+public int getPrevMaxVote(int groupID){
 	String[] cols = new String[] {ID_COLUMN, MAX_VOTE_NUMBER_COLUMN};
-	String[] whereArgs = new String[] {String.valueOf(group)};
+	String[] whereArgs = new String[] {String.valueOf(groupID)};
 	Cursor mCursor = database.query(true, TABLE, cols, UEBUNG_TYP_COLUMN+"=?", whereArgs, null, null, UEBUNG_NUMMER_COLUMN+" DESC", null);  
 	if (mCursor != null)
 		mCursor.moveToFirst();
 	if(mCursor.getCount()!=0)
 		return mCursor.getInt(1);
-	else 
+	else
 		return 10;
 }
 

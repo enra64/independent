@@ -28,6 +28,7 @@ public class DBGroups{
 	
 	public final static String UEBUNG_TYP_COLUMN=DatabaseCreator.GROUPS_NAMEN;  // name of employee
 	public final static String UEBUNG_MINVOTE_COLUMN=DatabaseCreator.GROUPS_MIN_VOTE;  // name of employee
+	public final static String UEBUNG_PRESPOINTS_COLUMN=DatabaseCreator.GROUPS_PRESENTATIONPOINTS;  // name of employee
 	
 	public DBGroups(Context context){
 	    dbHelper = new DatabaseCreator(context);
@@ -220,12 +221,12 @@ public class DBGroups{
 		if (mCursor != null)
 			mCursor.moveToFirst();
 		mCursor.moveToPosition(changePosition);
-		int changeNameAtId=mCursor.getInt(0);
+		int idOfNameToChange=mCursor.getInt(0);
 		mCursor.close();
 		ContentValues values = new ContentValues();
 		values.put(UEBUNG_TYP_COLUMN, newName);
 		
-		String[] whereArgs={String.valueOf(changeNameAtId)};
+		String[] whereArgs={String.valueOf(idOfNameToChange)};
 		int affectedRows=database.update(TABLE, values, ID_COLUMN+"=?", whereArgs);
 		Log.i("dbentries:changegroupname", "changed "+affectedRows+" entries");
 		return 1;
@@ -234,7 +235,7 @@ public class DBGroups{
 	public void deleteGroupAtPos(int deletePosition) {
 		//get name at position in cursor
 		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN};
-		Cursor mCursor = database.query(true, TABLE, cols, null, null, null, null, ID_COLUMN+" DESC", null);  
+		Cursor mCursor = database.query(true, TABLE, cols, null, null, null, null, ID_COLUMN+" DESC", null);
 		if (mCursor != null)
 			mCursor.moveToFirst();
 		mCursor.moveToPosition(deletePosition);
@@ -245,10 +246,34 @@ public class DBGroups{
 
 		deleteRecord(deleteName, deleteId);
 	}
-
-	public int getPresPoints(int position) {
-		// TODO Auto-generated method stub
-		
+	
+	/**
+	 * set the presentation points
+	 * @param dbID Database id of group to change
+	 * @param presPoints presentation points the user has
+	 * @return The amount of Rows updated, should be one
+	 */
+	public int setPresPoints(int dbID, int presPoints){
+		String[] whereArgs={String.valueOf(dbID)};
+		ContentValues values = new ContentValues();
+		values.put(UEBUNG_PRESPOINTS_COLUMN, presPoints);
+		return database.update(TABLE, values, ID_COLUMN+"=?", whereArgs);
+	}
+	
+	/**
+	 * Helper function for getting the pres points for the specified group
+	 * @param dbID the database id of the group
+	 * @return Prespoint number
+	 */
+	public int getPresPoints(int dbID) {
+		String[] cols = new String[] {ID_COLUMN, UEBUNG_PRESPOINTS_COLUMN};
+		String[] whereArgs = new String[] {String.valueOf(dbID)};
+		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=?", whereArgs, null, null, ID_COLUMN+" DESC", null);
+		if (mCursor != null)
+			mCursor.moveToFirst();
+		int presPoints=mCursor.getInt(1);
+		mCursor.close();
+		return presPoints;
 	}
 }
 
