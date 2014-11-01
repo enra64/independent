@@ -12,7 +12,7 @@ private DatabaseCreator dbHelper;
 
 private SQLiteDatabase database;  
 
-public final static String TABLE=DatabaseCreator.TABLE_ENTRIES; // name of table 
+public final static String TABLE=DatabaseCreator.TABLE_NAME_ENTRIES; // name of table 
 
 /* Database creation sql statement from database helper
  * We need
