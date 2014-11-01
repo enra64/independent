@@ -363,10 +363,11 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				int presPoint=groupDB.getPresPoints(translatedSection);
 				String presDescription="";
 				if(presPoint==1)
-					presDescription=" Präsentationspunkt";
+					presDescription=" Vortrag";
 				else
-					presDescription=" Präsentationspunkte";
+					presDescription=" Vorträge";
 				presPointView.setText(presPoint+presDescription);
+				
 				//create listview adapter
 				Cursor allEntryCursor=entryDB.getGroupRecords(translatedSection);
 				//define wanted columns
