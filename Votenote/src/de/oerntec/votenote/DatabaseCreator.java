@@ -8,7 +8,7 @@ import android.util.Log;
 public class DatabaseCreator extends SQLiteOpenHelper {
     private static final String DATABASE = "uebungen";
     
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
 
     /* Database creation sql statement
      * We need
@@ -45,7 +45,7 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     		"create table "+TABLE_GROUPS+"( "+GROUPS_ID+" integer primary key," +
     		GROUPS_NAMEN+" string not null," +
     		GROUPS_MIN_VOTE+" integer DEFAULT 50,"+
-    		GROUPS_PRESENTATIONPOINTS + "integer DEFAULT 0);";
+    		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0);";
 
     public DatabaseCreator(Context context) {
         super(context, DATABASE, null, DATABASE_VERSION);
