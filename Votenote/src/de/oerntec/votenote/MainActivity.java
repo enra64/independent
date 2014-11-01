@@ -2,7 +2,6 @@ package de.oerntec.votenote;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -19,10 +18,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.NumberPicker;
@@ -124,7 +125,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		final int translatedPosition=groupDB.translateDrawerSelectionToDBID(mCurrentSelectedPosition);
+		final int groupID=groupDB.translateDrawerSelectionToDBID(mCurrentSelectedPosition);
 		
 		switch(item.getItemId()){
 			case R.id.action_groupmanagement:
@@ -135,19 +136,48 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				createGroupDialog(this, false);
 				break;
 			case R.id.action_add_entry:
-				createEntryDialog(translatedPosition, true, 0);
+				createEntryDialog(groupID, true, 0);
 				break;
 			case R.id.action_prespoints:
-				createPresPointsDialog(translatedPosition);
+				createPresPointsDialog(groupID);
 				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private void createPresPointsDialog(int position) {
+	private void createPresPointsDialog(final int dataBaseId) {
 		final View inputView=this.getLayoutInflater().inflate(R.layout.dialog_changeprespoints, null);
 		final TextView presPointsView=(TextView) inputView.findViewById(R.id.prespointView);
-		presPointsView.setText(groupDB.getPresPoints(position));
+		final Button plusButton=(Button) inputView.findViewById(R.id.increasePresPoints);
+		final Button minusButton=(Button) inputView.findViewById(R.id.decreasePresPoints);
+		presPointsView.setText(String.valueOf(groupDB.getPresPoints(dataBaseId)));
+		plusButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				int prevValue=Integer.getInteger(presPointsView.getText().toString());
+				presPointsView.setText(prevValue+1);
+			}
+		});
+		minusButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				int prevValue=Integer.getInteger(presPointsView.getText().toString());
+				presPointsView.setText(prevValue-1);
+			}
+		});
+		//build alertdialog
+		Builder b=new AlertDialog.Builder(this)
+	    .setView(inputView)
+	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int whichButton) {
+	            int presPoints=Integer.getInteger(presPointsView.getText().toString());
+	            groupDB.setPresPoints(dataBaseId, presPoints);
+	            mNavigationDrawerFragment.forceReload();
+	        }
+	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
+	    });
+		b.setTitle("Erreichte Praesentationspunkte");
+		b.create().show();
 	}
 
 	/**
@@ -200,20 +230,20 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	
 	/**
 	 * Dialog for creating an entry
-	 * @param translatedPosition
+	 * @param groupID
 	 * @param add
 	 * @param uebungNummer
 	 */
-	private void createEntryDialog(final int translatedPosition, boolean add, int uebungNummer){
+	private void createEntryDialog(final int groupID, boolean add, int uebungNummer){
 		//if we add this entry, we use these values;
 		int maxVoteValue=0, minVoteValue=0;
 		if(add){
-			maxVoteValue=entryDB.getPrevMaxVote(translatedPosition);
+			maxVoteValue=entryDB.getPrevMaxVote(groupID);
 			minVoteValue=3;
 		}
 		//else we have to get them from the database
 		else{
-			Cursor oldValues=entryDB.getEntry(translatedPosition, uebungNummer);
+			Cursor oldValues=entryDB.getEntry(groupID, uebungNummer);
 			maxVoteValue=oldValues.getInt(1);
 			minVoteValue=oldValues.getInt(0);
 		}
@@ -270,7 +300,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	        		//reload current fragment
 		        	onNavigationDrawerItemSelected(mCurrentSelectedPosition);
 		        	Log.i("votenote:addentry", "reloading fragment "+mCurrentSelectedPosition);
-		            entryDB.addEntry(translatedPosition, maxVote.getValue(), myVote.getValue());
+		            entryDB.addEntry(groupID, maxVote.getValue(), myVote.getValue());
 	        	}
 	        	else
 	        		Toast.makeText(getApplicationContext(), "Mehr votiert als möglich!", Toast.LENGTH_SHORT).show();
