@@ -354,14 +354,21 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 			ListView voteList=(ListView) rootView.findViewById(R.id.voteList);
 			final TextView summaryView=(TextView) rootView.findViewById(R.id.voteAverage);
-
+			final TextView presPointView=(TextView) rootView.findViewById(R.id.mainPrespointView);
 			//if translatedSection is -1, no group has been added yet
 			if(translatedSection!=DBGroups.NO_GROUPS_EXIST){
 				Log.i("votenote main", "displaying entries for group "+translatedSection+" (according to group db)");
 				
-				Cursor allEntryCursor=entryDB.getGroupRecords(translatedSection);
-				
+				//set prespoints
+				int presPoint=groupDB.getPresPoints(translatedSection);
+				String presDescription="";
+				if(presPoint==1)
+					presDescription=" Präsentationspunkt";
+				else
+					presDescription=" Präsentationspunkte";
+				presPointView.setText(presPoint+presDescription);
 				//create listview adapter
+				Cursor allEntryCursor=entryDB.getGroupRecords(translatedSection);
 				//define wanted columns
 				String[] columns = {DatabaseCreator.ENTRIES_NUMMER_UEBUNG, DatabaseCreator.ENTRIES_MY_VOTES, DatabaseCreator.ENTRIES_MAX_VOTES};
 				
