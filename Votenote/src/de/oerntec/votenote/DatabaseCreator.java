@@ -19,6 +19,7 @@ public class DatabaseCreator extends SQLiteOpenHelper {
      * -my votierungs: my_votierung
      */
     
+    //database entries
     public static final String ENTRIES_ID="_id";
     public static final String ENTRIES_TYP_UEBUNG="typ_uebung";
     public static final String ENTRIES_NUMMER_UEBUNG="nummer_uebung";
@@ -34,10 +35,12 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     		ENTRIES_MAX_VOTES+" integer not null," +
     		ENTRIES_MY_VOTES+" integer not null);";
     
+    //database groups
     public static final String GROUPS_ID="_id";
     public static final String GROUPS_NAMEN="uebung_name";
     public static final String GROUPS_MIN_VOTE="uebung_minvote";
     public static final String GROUPS_PRESENTATIONPOINTS="uebung_prespoints";
+    public static final String GROUPS_MAX_PRESENTATIONPOINTS="uebung_max_prespoints";
     
     public static final String TABLE_NAME_GROUPS="uebungen_gruppen";
     
@@ -45,7 +48,8 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     		"create table "+TABLE_NAME_GROUPS+"( "+GROUPS_ID+" integer primary key," +
     		GROUPS_NAMEN+" string not null," +
     		GROUPS_MIN_VOTE+" integer DEFAULT 50,"+
-    		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0);";
+    		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0"+
+    		GROUPS_MAX_PRESENTATIONPOINTS + " integer DEFAULT 2);";
 
     public DatabaseCreator(Context context) {
         super(context, DATABASE, null, DATABASE_VERSION);
@@ -77,8 +81,6 @@ public class DatabaseCreator extends SQLiteOpenHelper {
             			+ "SELECT "
             	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+
             	", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+"  FROM oldentries");
-        //drop old one -currently not doing that to avoid loss of data
-        //database.execSQL("DROP TABLE IF EXISTS oldentries");
         /*
          * old db manager
          */
@@ -88,7 +90,7 @@ public class DatabaseCreator extends SQLiteOpenHelper {
 		
 		//copy values
 		database.execSQL("INSERT INTO "+TABLE_NAME_GROUPS+" ("
-		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+") "
+		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+","+GROUPS_MAX_PRESENTATIONPOINTS+") "
 		    			+ "SELECT "
 		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+" FROM oldgroups");
 		onCreate(database);
