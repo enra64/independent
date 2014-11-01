@@ -72,16 +72,25 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     	database.execSQL(CREATE_DATABASE_ENTRIES);
     	//copy values
         database.execSQL("INSERT INTO "+TABLE_NAME_ENTRIES+" ("
-            	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+") "
+            	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+
+            	", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+") "
             			+ "SELECT "
-            	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+"  FROM oldentries");
-        //drop old one
-        database.execSQL("DROP TABLE IF EXISTS oldentries");
+            	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+
+            	", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+"  FROM oldentries");
+        //drop old one -currently not doing that to avoid loss of data
+        //database.execSQL("DROP TABLE IF EXISTS oldentries");
         /*
          * old db manager
          */
-        database.execSQL("DROP TABLE IF EXISTS uebungen_eintraege");
-        database.execSQL("DROP TABLE IF EXISTS uebungen_gruppen");
-        onCreate(database);
+        //rename old db, create new one;
+		database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" RENAME TO oldgroups");
+		database.execSQL(TABLE_NAME_GROUPS);
+		
+		//copy values
+		database.execSQL("INSERT INTO "+TABLE_NAME_GROUPS+" ("
+		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+") "
+		    			+ "SELECT "
+		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+" FROM oldgroups");
+		onCreate(database);
     }
 }
