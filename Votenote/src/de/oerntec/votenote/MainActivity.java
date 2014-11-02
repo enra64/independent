@@ -189,11 +189,27 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 		//inflat view with seekbar and name
 		final View input=((Activity) context).getLayoutInflater().inflate(R.layout.dialog_newgroup, null);
 		final EditText nameInput=(EditText) input.findViewById(R.id.editNewName);
+		final TextView presInfo=(TextView) input.findViewById(R.id.dialogNewGroupMinPresInfoText);
+		final SeekBar minPresSeek=(SeekBar) input.findViewById(R.id.dialogNewGroupPresSeek);
+		final TextView infoView=(TextView) input.findViewById(R.id.minVotInfoText);
+		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
 		nameInput.setHint("Übungsname");
 		
-		final TextView infoView=(TextView) input.findViewById(R.id.minVotInfoText);
+		//minpresseek
+		presInfo.setText("2");
 		
-		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
+		minPresSeek.setMax(5);
+		minPresSeek.setProgress(2);
+		minPresSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
+			@Override public void onStopTrackingTouch(SeekBar seekBar) {}       
+			@Override public void onStartTrackingTouch(SeekBar seekBar){}
+			@Override
+			public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
+				presInfo.setText(String.valueOf(progress));
+			}
+		});
+		
+		//minvot seek
 		minVoteSeek.setMax(100);
 		minVoteSeek.setProgress(50);
 		minVoteSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
@@ -211,8 +227,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
 	            String name = nameInput.getText().toString();
-	            int minVotValue=minVoteSeek.getProgress();
-	            if(groupDB.changeOrAddGroupName(name, minVotValue)==-1)
+	            if(groupDB.addGroup(name, minVoteSeek.getProgress(), minPresSeek.getProgress())==-1)
 	            	Toast.makeText(context, "Übung existiert schon", Toast.LENGTH_SHORT).show();
 	            else
 	            	mNavigationDrawerFragment.forceReload();
@@ -348,7 +363,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			final DBGroups groupDB=new DBGroups(getActivity());
 			
 			//translate from position in drawer to db group id
-			final int translatedSection= groupDB.translateDrawerSelectionToDBID(mSectionNumber);
+			final int databaseID= groupDB.translateDrawerSelectionToDBID(mSectionNumber);
 
 			//find and inflate everything
 			View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -356,20 +371,25 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			final TextView summaryView=(TextView) rootView.findViewById(R.id.voteAverage);
 			final TextView presPointView=(TextView) rootView.findViewById(R.id.mainPrespointView);
 			//if translatedSection is -1, no group has been added yet
-			if(translatedSection!=DBGroups.NO_GROUPS_EXIST){
-				Log.i("votenote main", "displaying entries for group "+translatedSection+" (according to group db)");
+			if(databaseID!=DBGroups.NO_GROUPS_EXIST){
+				Log.i("votenote main", "displaying entries for group "+databaseID+" (according to group db)");
 				
 				//set prespoints
-				int presPoint=groupDB.getPresPoints(translatedSection);
+				int presPoint=groupDB.getPresPoints(databaseID);
+				int minPresPoints=groupDB.getMinPresPoints(databaseID);
 				String presDescription="";
-				if(presPoint==1)
+				if(minPresPoints==1)
 					presDescription=" Vortrag";
 				else
-					presDescription=" Vorträge";
-				presPointView.setText(presPoint+presDescription);
+					presDescription=" Vorträgen";
+				presPointView.setText(presPoint+" von "+minPresPoints+presDescription);
+				/*
+				 * 0 von 1 vortrag
+				 * 0 von 2 vorträgen
+				 */
 				
 				//create listview adapter
-				Cursor allEntryCursor=entryDB.getGroupRecords(translatedSection);
+				Cursor allEntryCursor=entryDB.getGroupRecords(databaseID);
 				//define wanted columns
 				String[] columns = {DatabaseCreator.ENTRIES_NUMMER_UEBUNG, DatabaseCreator.ENTRIES_MY_VOTES, DatabaseCreator.ENTRIES_MAX_VOTES};
 				
@@ -414,10 +434,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 					        public void onClick(DialogInterface dialog, int whichButton) {
 					        	if(myVote.getValue()<=maxVote.getValue()){//check for valid entry
 					        		//change db entry
-					        		entryDB.changeEntry(translatedSection, translatedPosition, maxVote.getValue(), myVote.getValue());
+					        		entryDB.changeEntry(databaseID, translatedPosition, maxVote.getValue(), myVote.getValue());
 									//reload list- and textview; close old cursor
-					        		groupAdapter.swapCursor(entryDB.getGroupRecords(translatedSection)).close();
-					        		setVoteAverage(translatedSection, summaryView);
+					        		groupAdapter.swapCursor(entryDB.getGroupRecords(databaseID)).close();
+					        		setVoteAverage(databaseID, summaryView);
 					        	}
 					        	else
 					        		Toast.makeText(getActivity(), "Mehr votiert als möglich!", Toast.LENGTH_SHORT).show();
@@ -430,7 +450,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 					private void configureNumberPickers(final TextView infoView, final NumberPicker maxVote, final NumberPicker myVote, int translatedPosition) {
 						//get the old values from the database; position +1 because natural counting style
 						//is used when counting the uebungs
-						Cursor oldValues=entryDB.getEntry(translatedSection, translatedPosition);
+						Cursor oldValues=entryDB.getEntry(databaseID, translatedPosition);
 						maxVote.setMinValue(1);
 				        maxVote.setMaxValue(15);
 				        maxVote.setValue(oldValues.getInt(1));
@@ -454,7 +474,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				});
 				
 				//set summaryView to average
-				setVoteAverage(translatedSection, summaryView);
+				setVoteAverage(databaseID, summaryView);
 			}
 			else{
 				createGroupDialog(getActivity(), true);
