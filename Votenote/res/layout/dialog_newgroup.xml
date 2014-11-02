@@ -39,4 +39,32 @@
         android:text="50%"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
+    <TextView
+        android:id="@+id/newgroupPresPointHelp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/newMinVotSeek"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:text="Erforderliche Vortragspunkte"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <SeekBar
+        android:id="@+id/dialogNewGroupPresSeek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/newMinVotSeek"
+        android:layout_below="@+id/newgroupPresPointHelp" />
+
+    <TextView
+        android:id="@+id/dialogNewGroupMinPresInfoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/dialogNewGroupPresSeek"
+        android:layout_alignParentRight="true"
+        android:text="3"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
 </RelativeLayout>
