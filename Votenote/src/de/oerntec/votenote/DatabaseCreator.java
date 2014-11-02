@@ -8,7 +8,7 @@ import android.util.Log;
 public class DatabaseCreator extends SQLiteOpenHelper {
     private static final String DATABASE = "uebungen";
     
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12;
 
     /* Database creation sql statement
      * We need
@@ -48,7 +48,7 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     		"create table "+TABLE_NAME_GROUPS+"( "+GROUPS_ID+" integer primary key," +
     		GROUPS_NAMEN+" string not null," +
     		GROUPS_MIN_VOTE+" integer DEFAULT 50,"+
-    		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0"+
+    		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0,"+
     		GROUPS_MAX_PRESENTATIONPOINTS + " integer DEFAULT 2);";
 
     public DatabaseCreator(Context context) {
@@ -90,9 +90,10 @@ public class DatabaseCreator extends SQLiteOpenHelper {
 		
 		//copy values
 		database.execSQL("INSERT INTO "+TABLE_NAME_GROUPS+" ("
-		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+","+GROUPS_MAX_PRESENTATIONPOINTS+") "
+		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+") "
 		    			+ "SELECT "
 		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+" FROM oldgroups");
+		database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" ADD "+GROUPS_MAX_PRESENTATIONPOINTS+" INTEGER DEFAULT 2");
 		//onCreate(database);
     }
 }
