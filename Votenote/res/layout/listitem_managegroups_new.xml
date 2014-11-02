@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:minHeight="60dp" >
 
     <TextView
         android:id="@+id/listitem_groupmanager_groupname"
@@ -9,9 +10,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:paddingTop="17dp"
         android:text="Mathe"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#333333" />
+        android:textColor="#333333"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/listitem_groupmanager_minprespoints"
@@ -19,9 +22,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:paddingTop="17dp"
         android:text="3"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#333333" />
+        android:textColor="#333333"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/listitem_groupmanager_seperator"
@@ -29,9 +34,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/listitem_groupmanager_minprespoints"
+        android:paddingTop="17dp"
         android:text="%/"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#333333" />
+        android:textColor="#333333"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/listitem_groupmanager_minvote"
@@ -39,8 +46,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/listitem_groupmanager_seperator"
+        android:paddingTop="17dp"
         android:text="66"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#333333" />
+        android:textColor="#333333"
+        android:textSize="16sp" />
 
 </RelativeLayout>
