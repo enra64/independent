@@ -51,8 +51,11 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	 */
 	private CharSequence mTitle;
 	
+	//database connection
 	private static DBGroups groupDB;
 	private static DBEntries entryDB;
+	
+	TextView ppV;
 	
 	private static int mCurrentSelectedPosition;
 	
@@ -165,18 +168,24 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				presPointsView.setText(String.valueOf(prevValue-1));
 			}
 		});
-		//build alertdialog
+
+		/*
+		 * PRESPOINT ALERTDIALOG
+		 */
 		Builder b=new AlertDialog.Builder(this)
 	    .setView(inputView)
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
+	        	//write new prespoint count to db
 	        	String presPointsString=presPointsView.getText().toString();
-	            int presPoints=Integer.valueOf(presPointsString);
-	            groupDB.setPresPoints(dataBaseId, presPoints);
+	            groupDB.setPresPoints(dataBaseId, Integer.valueOf(presPointsString));
+	            //reload fragment
+	        	onNavigationDrawerItemSelected(mCurrentSelectedPosition);
+	        	Log.i("votenote:addentry", "reloading fragment "+mCurrentSelectedPosition);
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
 	    });
-		b.setTitle("Erreichte Praesentationspunkte");
+		b.setTitle("Erreichte Präsentationspunkte");
 		b.create().show();
 	}
 
@@ -221,7 +230,9 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			}
 		});
 		
-		//build alertdialog
+		/* NEWGROUP ALERTDIALOG
+		 * build it now
+		 */
 		Builder b=new AlertDialog.Builder(context)
 	    .setView(input)
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -261,6 +272,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			Cursor oldValues=entryDB.getEntry(groupID, uebungNummer);
 			maxVoteValue=oldValues.getInt(1);
 			minVoteValue=oldValues.getInt(0);
+			oldValues.close();
 		}
 		//inflate view, find the textview containing the explanation
 		final View pickView=this.getLayoutInflater().inflate(R.layout.dialog_new_entry, null);
@@ -368,13 +380,17 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			//find and inflate everything
 			View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 			ListView voteList=(ListView) rootView.findViewById(R.id.voteList);
-			final TextView summaryView=(TextView) rootView.findViewById(R.id.voteAverage);
+			final TextView averageView=(TextView) rootView.findViewById(R.id.voteAverage);
 			final TextView presPointView=(TextView) rootView.findViewById(R.id.mainPrespointView);
+			
 			//if translatedSection is -1, no group has been added yet
 			if(databaseID!=DBGroups.NO_GROUPS_EXIST){
 				Log.i("votenote main", "displaying entries for group "+databaseID+" (according to group db)");
 				
-				//set prespoints
+				/* PRESENTATION POINTS INFO
+				 * set view containing info about the current 
+				 * and needed presentation points
+				 */
 				int presPoint=groupDB.getPresPoints(databaseID);
 				int minPresPoints=groupDB.getMinPresPoints(databaseID);
 				String presDescription="";
@@ -383,12 +399,14 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				else
 					presDescription=" Vorträgen";
 				presPointView.setText(presPoint+" von "+minPresPoints+presDescription);
-				/*
-				 * 0 von 1 vortrag
-				 * 0 von 2 vorträgen
-				 */
 				
-				//create listview adapter
+				//make view invisible if no presentations are required
+				if(minPresPoints==0)
+					presPointView.setVisibility(View.INVISIBLE);
+
+				/* ALLENTRY LISTVIEW
+				 * create the listview adapter responsible for showing all group entries
+				 */
 				Cursor allEntryCursor=entryDB.getGroupRecords(databaseID);
 				//define wanted columns
 				String[] columns = {DatabaseCreator.ENTRIES_NUMMER_UEBUNG, DatabaseCreator.ENTRIES_MY_VOTES, DatabaseCreator.ENTRIES_MAX_VOTES};
@@ -408,7 +426,9 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				voteList.setAdapter(groupAdapter);
 				//votelist adaptering finished
 				
-				//creating onclicklistener for showing change dialog
+				/*
+				 * make onclicklistener if a entry has been clicked
+				 */
 				voteList.setOnItemClickListener(new OnItemClickListener(){
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
@@ -425,7 +445,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				        //configure the number pickers for translatedposition, connect to infoview
 				        configureNumberPickers(infoView, maxVote, myVote, translatedPosition);
 				        //finished configuring view
-				     
+				        
+				        /*
+				         * alert dialog for changing entry
+				         */
 				        //building alertdialog with the view just configured
 						new AlertDialog.Builder(getActivity())
 					    .setTitle("Eintrag ändern")
@@ -437,7 +460,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 					        		entryDB.changeEntry(databaseID, translatedPosition, maxVote.getValue(), myVote.getValue());
 									//reload list- and textview; close old cursor
 					        		groupAdapter.swapCursor(entryDB.getGroupRecords(databaseID)).close();
-					        		setVoteAverage(databaseID, summaryView);
+					        		setVoteAverage(databaseID, averageView);
 					        	}
 					        	else
 					        		Toast.makeText(getActivity(), "Mehr votiert als möglich!", Toast.LENGTH_SHORT).show();
@@ -446,7 +469,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 					        public void onClick(DialogInterface dialog, int whichButton) {}
 					    }).show();
 					}
-
+					
+					/**
+					 * configures the numberpickers with the given parameters
+					 */
 					private void configureNumberPickers(final TextView infoView, final NumberPicker maxVote, final NumberPicker myVote, int translatedPosition) {
 						//get the old values from the database; position +1 because natural counting style
 						//is used when counting the uebungs
@@ -470,20 +496,24 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				        });
 				      //set the current values of the pickers as explanation text
 				        infoView.setText(myVote.getValue()+" von "+maxVote.getValue()+" Votes");
+				        oldValues.close();
 					}
 				});
 				
 				//set summaryView to average
-				setVoteAverage(databaseID, summaryView);
+				setVoteAverage(databaseID, averageView);
 			}
 			else{
 				createGroupDialog(getActivity(), true);
 				//reload drawer...
-				summaryView.setText("Füge einen Eintrag hinzu");
+				averageView.setText("Füge einen Eintrag hinzu");
 			}
 			return rootView;
 		}
 		
+		/*
+		 * calculate the average of votings vs how much you need
+		 */
 		private void setVoteAverage(int forSection, TextView affectView){
 			//logging b/c i am slightly retarded
 			Log.i("votenote:calcavg", "calculating average for section "+forSection);

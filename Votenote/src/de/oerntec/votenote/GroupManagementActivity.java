@@ -111,10 +111,10 @@ public class GroupManagementActivity extends Activity {
 		final SeekBar minPresSeek=(SeekBar) input.findViewById(R.id.dialogNewGroupPresSeek);
 		
 		//minpresseek
-		presInfo.setText("2");
-		
+		int prevMinPresPoints=groupsDB.getMinPresPoints(databaseID);
+		presInfo.setText(""+prevMinPresPoints);
+		minPresSeek.setProgress(prevMinPresPoints);
 		minPresSeek.setMax(5);
-		minPresSeek.setProgress(2);
 		minPresSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
 			@Override public void onStopTrackingTouch(SeekBar seekBar) {}       
 			@Override public void onStartTrackingTouch(SeekBar seekBar){}
@@ -151,8 +151,9 @@ public class GroupManagementActivity extends Activity {
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
 	        	//change minimum vote, pres value
-	            groupsDB.changeMinVote(databaseID, minVoteSeek.getProgress());
-	            groupsDB.setMinPresPoints(databaseID, minPresSeek.getProgress());
+	            groupsDB.setMinVote(databaseID, minVoteSeek.getProgress());
+	            if(groupsDB.setMinPresPoints(databaseID, minPresSeek.getProgress())!=1)
+	            	Log.e("groupmanager", "did not update one row");
 	            //change group name if it changed
 	            String newName = nameInput.getText().toString();
 	            if(!newName.equals(oldName)&&newName!="")

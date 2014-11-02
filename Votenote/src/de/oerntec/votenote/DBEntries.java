@@ -79,6 +79,12 @@ public void changeEntry(int uebungTyp, int uebungNummer, int maxVote, int myVote
 	Log.i("dbentries:changeentry", "changed "+affectedRows+" entries");
 }
 
+/**
+ * 
+ * @param uebungTyp Type of the uebung concerned
+ * @param uebungNummer Nummer of the entry
+ * @return A cursor containing myvote, maxvote and id
+ */
 public Cursor getEntry(int uebungTyp, int uebungNummer){
 	String[] cols = new String[] {MY_VOTE_NUMBER_COLUMN, MAX_VOTE_NUMBER_COLUMN, ID_COLUMN};
 	String[] whereArgs={String.valueOf(uebungTyp), String.valueOf(uebungNummer)};
