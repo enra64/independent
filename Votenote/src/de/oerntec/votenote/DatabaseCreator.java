@@ -40,7 +40,7 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     public static final String GROUPS_NAMEN="uebung_name";
     public static final String GROUPS_MIN_VOTE="uebung_minvote";
     public static final String GROUPS_PRESENTATIONPOINTS="uebung_prespoints";
-    public static final String GROUPS_MAX_PRESENTATIONPOINTS="uebung_max_prespoints";
+    public static final String GROUPS_MIN_PRESENTATIONPOINTS="uebung_max_prespoints";
     
     public static final String TABLE_NAME_GROUPS="uebungen_gruppen";
     
@@ -49,7 +49,7 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     		GROUPS_NAMEN+" string not null," +
     		GROUPS_MIN_VOTE+" integer DEFAULT 50,"+
     		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0,"+
-    		GROUPS_MAX_PRESENTATIONPOINTS + " integer DEFAULT 2);";
+    		GROUPS_MIN_PRESENTATIONPOINTS + " integer DEFAULT 2);";
 
     public DatabaseCreator(Context context) {
         super(context, DATABASE, null, DATABASE_VERSION);
@@ -68,32 +68,9 @@ public class DatabaseCreator extends SQLiteOpenHelper {
         Log.w(DatabaseCreator.class.getName(),
                          "Upgrading database from version " + oldVersion + " to "
                          + newVersion + ", which will destroy all old data");
-        /*
-         * more advanced db management
-         */
-        //rename old db, create new one;
-        database.execSQL("ALTER TABLE "+TABLE_NAME_ENTRIES+" RENAME TO oldentries");
-    	database.execSQL(CREATE_DATABASE_ENTRIES);
-    	//copy values
-        database.execSQL("INSERT INTO "+TABLE_NAME_ENTRIES+" ("
-            	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+
-            	", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+") "
-            			+ "SELECT "
-            	+ENTRIES_ID+", "+ENTRIES_TYP_UEBUNG+", "+ENTRIES_NUMMER_UEBUNG+
-            	", "+ENTRIES_MAX_VOTES+", "+ENTRIES_MY_VOTES+"  FROM oldentries");
-        /*
-         * old db manager
-         */
-        //rename old db, create new one;
-		database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" RENAME TO oldgroups");
-		database.execSQL(CREATE_DATABASE_GROUPS);
-		
-		//copy values
-		database.execSQL("INSERT INTO "+TABLE_NAME_GROUPS+" ("
-		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+") "
-		    			+ "SELECT "
-		    	+GROUPS_ID+", "+GROUPS_NAMEN+", "+GROUPS_MIN_VOTE+", "+GROUPS_PRESENTATIONPOINTS+" FROM oldgroups");
-		database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" ADD "+GROUPS_MAX_PRESENTATIONPOINTS+" INTEGER DEFAULT 2");
-		//onCreate(database);
+        if(newVersion==12){
+        	Log.i("database:creator", "changed to "+newVersion+" from "+oldVersion);
+        	database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" ADD "+GROUPS_MIN_PRESENTATIONPOINTS+" INTEGER DEFAULT 2");
+        }
     }
 }
