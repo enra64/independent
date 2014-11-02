@@ -95,7 +95,7 @@ public class GroupManagementActivity extends Activity {
 	}
 	
 	protected void showChangeDialog(final int pos) {
-		final int changePosition=groupsDB.translateDrawerSelectionToDBID(pos);
+		final int databaseID=groupsDB.translateDrawerSelectionToDBID(pos);
 		//get old name
 		Cursor allCursor=groupsDB.allGroupNames();
 		allCursor.moveToPosition(pos);
@@ -129,7 +129,7 @@ public class GroupManagementActivity extends Activity {
 		nameInput.setText(oldName);
 		
 		//initialize seekbar and seekbar info text
-		int oldMinVote=groupsDB.getMinVote(changePosition);
+		int oldMinVote=groupsDB.getMinVote(databaseID);
 		voteInfo.setText(oldMinVote+"%");
 		
 		
@@ -150,15 +150,13 @@ public class GroupManagementActivity extends Activity {
 	    .setTitle(oldName+" ändern")
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
-	        	//change minimum vote value
-	        	int minVotValue=minVoteSeek.getProgress();
-	            groupsDB.changeMinVote(changePosition, minVotValue);
-	            
+	        	//change minimum vote, pres value
+	            groupsDB.changeMinVote(databaseID, minVoteSeek.getProgress());
+	            groupsDB.setMinPresPoints(databaseID, minPresSeek.getProgress());
 	            //change group name if it changed
 	            String newName = nameInput.getText().toString();
-	            if(!newName.equals(oldName)&&newName!=""){
-	            	groupsDB.changePositionTO(changePosition, newName);
-	            }
+	            if(!newName.equals(oldName)&&newName!="")
+	            	groupsDB.changePositionTO(databaseID, newName);
 	            groupAdapter.swapCursor(groupsDB.allGroupNamesAndMinvotes()).close();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
@@ -217,11 +215,27 @@ public class GroupManagementActivity extends Activity {
 		//inflat view with seekbar and name
 		final View input=((Activity) context).getLayoutInflater().inflate(R.layout.dialog_newgroup, null);
 		final EditText nameInput=(EditText) input.findViewById(R.id.editNewName);
+		final TextView presInfo=(TextView) input.findViewById(R.id.dialogNewGroupMinPresInfoText);
+		final SeekBar minPresSeek=(SeekBar) input.findViewById(R.id.dialogNewGroupPresSeek);
+		final TextView infoView=(TextView) input.findViewById(R.id.minVotInfoText);
+		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
 		nameInput.setHint("Übungsname");
 		
-		final TextView infoView=(TextView) input.findViewById(R.id.minVotInfoText);
+		//minpresseek
+		presInfo.setText("2");
 		
-		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
+		minPresSeek.setMax(5);
+		minPresSeek.setProgress(2);
+		minPresSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
+			@Override public void onStopTrackingTouch(SeekBar seekBar) {}       
+			@Override public void onStartTrackingTouch(SeekBar seekBar){}
+			@Override
+			public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
+				presInfo.setText(String.valueOf(progress));
+			}
+		});
+		
+		//minvoteseek
 		minVoteSeek.setMax(100);
 		minVoteSeek.setProgress(50);
 		minVoteSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
@@ -240,7 +254,7 @@ public class GroupManagementActivity extends Activity {
 	        public void onClick(DialogInterface dialog, int whichButton) {
 	            String name = nameInput.getText().toString();
 	            int minVotValue=minVoteSeek.getProgress();
-	            if(groupsDB.changeOrAddGroupName(name, minVotValue)==-1)
+	            if(groupsDB.addGroup(name, minVotValue, minPresSeek.getProgress())==-1)
 	            	Toast.makeText(context, "Übung existiert schon", Toast.LENGTH_SHORT).show();
 	            else
 	            	groupAdapter.swapCursor(groupsDB.allGroupNamesAndMinvotes()).close();

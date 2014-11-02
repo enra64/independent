@@ -29,10 +29,11 @@ public class DBGroups{
 	public final static String UEBUNG_TYP_COLUMN=DatabaseCreator.GROUPS_NAMEN;  // name of employee
 	public final static String UEBUNG_MINVOTE_COLUMN=DatabaseCreator.GROUPS_MIN_VOTE;  // name of employee
 	public final static String UEBUNG_PRESPOINTS_COLUMN=DatabaseCreator.GROUPS_PRESENTATIONPOINTS;  // name of employee
+	public final static String UEBUNG_MIN_PRESPOINTS_COLUMN=DatabaseCreator.GROUPS_MIN_PRESENTATIONPOINTS;  // name of employee
 	
 	public DBGroups(Context context){
 	    dbHelper = new DatabaseCreator(context);
-	    database = dbHelper.getWritableDatabase();  
+	    database = dbHelper.getWritableDatabase();
 	}
 	
 	/**
@@ -93,11 +94,13 @@ public class DBGroups{
 	}
 	
 	/**
-	 * Adds a group to the Table, if it does not exist;
-	 * if a group with the given name exists, we change it.
-	 * @param groupName Name of the group.
+	 * Adds a group with the given Parameters
+	 * @param groupName Name of the new Group
+	 * @param minVot minimum vote
+	 * @param minPres minimum presentation points
+	 * @return -1 if group exists, 1 else.
 	 */
-	public int changeOrAddGroupName(String groupName, int minVot){
+	public int addGroup(String groupName, int minVot, int minPres){
 		//check whether group name exists; abort if it does
 		String[] testColumns = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN};
 		Cursor testCursor = database.query(true, TABLE, testColumns, null, null, null, null, ID_COLUMN+" DESC", null);  
@@ -120,6 +123,7 @@ public class DBGroups{
 		ContentValues values = new ContentValues();
 		values.put(UEBUNG_TYP_COLUMN, groupName);
 		values.put(UEBUNG_MINVOTE_COLUMN, minVot);
+		values.put(UEBUNG_MIN_PRESPOINTS_COLUMN, minPres);
 		
 		//name already exists->update
 		if(mCursor.getCount()==1){
@@ -167,6 +171,10 @@ public class DBGroups{
 		return mCursor; // iterate to get each value.
 	}
 	
+	/**
+	 * returns a cursor with all 
+	 * @return
+	 */
 	public Cursor allGroupNamesAndMinvotes(){
 		//sort cursor by name to have a defined reihenfolg
 		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN, UEBUNG_MINVOTE_COLUMN};
@@ -204,13 +212,13 @@ public class DBGroups{
 		return minVote;
 	}
 
-	public void changeMinVote(int group, int minValue) {
+	public void changeMinVote(int databaseID, int minValue) {
 		Log.i("DBGroups", "changing minvalue");
 		//create values for insert or update
 		ContentValues values = new ContentValues();
 		values.put(UEBUNG_MINVOTE_COLUMN, minValue);
 		
-		String[] whereArgs={String.valueOf(group)};
+		String[] whereArgs={String.valueOf(databaseID)};
 		database.update(TABLE, values, ID_COLUMN+"=?", whereArgs);
 	}
 
@@ -274,6 +282,35 @@ public class DBGroups{
 		int presPoints=mCursor.getInt(1);
 		mCursor.close();
 		return presPoints;
+	}
+	
+	/**
+	 * set the minimum amount of presentation points needed for passing
+	 * @param dbID Database id of group to change
+	 * @param minPresPoints presentation points the user has
+	 * @return The amount of rows updated, should be one
+	 */
+	public int setMinPresPoints(int dbID, int minPresPoints){
+		String[] whereArgs={String.valueOf(dbID)};
+		ContentValues values = new ContentValues();
+		values.put(UEBUNG_MIN_PRESPOINTS_COLUMN, minPresPoints);
+		return database.update(TABLE, values, ID_COLUMN+"=?", whereArgs);
+	}
+	
+	/**
+	 * Get the minimum prespoints for the given group
+	 * @param dbID ID of the Group
+	 * @return Minimum number of Prespoints needed for passing
+	 */
+	public int getMinPresPoints(int dbID) {
+		String[] cols = new String[] {ID_COLUMN, UEBUNG_MIN_PRESPOINTS_COLUMN};
+		String[] whereArgs = new String[] {String.valueOf(dbID)};
+		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=?", whereArgs, null, null, ID_COLUMN+" DESC", null);
+		if (mCursor != null)
+			mCursor.moveToFirst();
+		int maxPresPoints=mCursor.getInt(1);
+		mCursor.close();
+		return maxPresPoints;
 	}
 }
 
