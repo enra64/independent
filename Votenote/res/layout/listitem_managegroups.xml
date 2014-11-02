@@ -15,7 +15,6 @@
         android:layout_width="fill_parent"
         android:layout_height="60dp"
         android:background="#FFF"
-        android:gravity="left|center"
         android:textColor="#333333"
         android:textSize="16sp" />
 
@@ -24,7 +23,6 @@
         android:layout_width="fill_parent"
         android:layout_height="60dp"
         android:background="#FFF"
-        android:gravity="left|center"
         android:textColor="#333333"
         android:textSize="16sp" />
 
