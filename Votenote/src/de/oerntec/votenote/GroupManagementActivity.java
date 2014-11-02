@@ -41,21 +41,21 @@ public class GroupManagementActivity extends Activity {
 		groupsDB=new DBGroups(this);
 		entriesDB=new DBEntries(this);
 		
-		//config listview
+		/*
+		 * create listview
+		 */
 		// set up the drawer's list view with items and click listener
-		Cursor allCursor=groupsDB.allGroupNamesAndMinvotes();
-		
+		Cursor allCursor=groupsDB.allGroupsAllInfo();
 		//define wanted columns
-		String[] columns = {DatabaseCreator.GROUPS_NAMEN, DatabaseCreator.GROUPS_MIN_VOTE};
+		String[] columns = {DatabaseCreator.GROUPS_NAMEN, DatabaseCreator.GROUPS_MIN_VOTE, DatabaseCreator.GROUPS_MIN_PRESENTATIONPOINTS};
 		
 		//define id values of views to be set
-		int[] to= {R.id.textGroupName, R.id.textMinVote};
+		int[] to= {R.id.listitem_groupmanager_groupname, R.id.listitem_groupmanager_minvote, R.id.listitem_groupmanager_minprespoints};
 		
-		// create the adapter using the cursor pointing to the desired data 
-		//as well as the layout information
+		// create the adapter using the cursor pointing to the desired data
 		groupAdapter = new SimpleCursorAdapter(
 		    this, 
-		    R.layout.listitem_managegroups, 
+		    R.layout.listitem_managegroups_new, 
 		    allCursor, 
 		    columns, 
 		    to,
@@ -69,7 +69,6 @@ public class GroupManagementActivity extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
 				Log.i("gmanage", "handling listview click on "+view.toString());
 				showNameActionsDialog(position);
-				
 			}
 		});
 	}
@@ -158,7 +157,7 @@ public class GroupManagementActivity extends Activity {
 	            String newName = nameInput.getText().toString();
 	            if(!newName.equals(oldName)&&newName!="")
 	            	groupsDB.changePositionTO(databaseID, newName);
-	            groupAdapter.swapCursor(groupsDB.allGroupNamesAndMinvotes()).close();
+	            groupAdapter.swapCursor(groupsDB.allGroupsAllInfo()).close();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
 	    });
@@ -180,7 +179,7 @@ public class GroupManagementActivity extends Activity {
 	        public void onClick(DialogInterface dialog, int whichButton) {
 	        	groupsDB.deleteGroupAtPos(deletePosition);
 	        	entriesDB.deleteAllEntriesForGroup(confirmedGroupID);
-	        	groupAdapter.swapCursor(groupsDB.allGroupNamesAndMinvotes()).close();
+	        	groupAdapter.swapCursor(groupsDB.allGroupsAllInfo()).close();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
 	    	public void onClick(DialogInterface dialog, int whichButton) {}
@@ -258,7 +257,7 @@ public class GroupManagementActivity extends Activity {
 	            if(groupsDB.addGroup(name, minVotValue, minPresSeek.getProgress())==-1)
 	            	Toast.makeText(context, "Übung existiert schon", Toast.LENGTH_SHORT).show();
 	            else
-	            	groupAdapter.swapCursor(groupsDB.allGroupNamesAndMinvotes()).close();
+	            	groupAdapter.swapCursor(groupsDB.allGroupsAllInfo()).close();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
 	    });
