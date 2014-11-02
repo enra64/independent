@@ -105,16 +105,34 @@ public class GroupManagementActivity extends Activity {
 		//inflate view with seekbar and name
 		final View input=this.getLayoutInflater().inflate(R.layout.dialog_newgroup, null);
 		final EditText nameInput=(EditText) input.findViewById(R.id.editNewName);
-		final TextView infoView=(TextView) input.findViewById(R.id.minVotInfoText);
+		final TextView voteInfo=(TextView) input.findViewById(R.id.minVotInfoText);
+		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
+		final TextView presInfo=(TextView) input.findViewById(R.id.dialogNewGroupMinPresInfoText);
+		final SeekBar minPresSeek=(SeekBar) input.findViewById(R.id.dialogNewGroupPresSeek);
 		
+		//minpresseek
+		presInfo.setText("2");
+		
+		minPresSeek.setMax(5);
+		minPresSeek.setProgress(2);
+		minPresSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
+			@Override public void onStopTrackingTouch(SeekBar seekBar) {}       
+			@Override public void onStartTrackingTouch(SeekBar seekBar){}
+			@Override
+			public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
+				presInfo.setText(String.valueOf(progress));
+			}
+		});
+		
+		//minvoteseek
 		//offer hint to user
 		nameInput.setText(oldName);
 		
 		//initialize seekbar and seekbar info text
 		int oldMinVote=groupsDB.getMinVote(changePosition);
-		infoView.setText(oldMinVote+"%");
+		voteInfo.setText(oldMinVote+"%");
 		
-		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
+		
 		minVoteSeek.setMax(100);
 		minVoteSeek.setProgress(oldMinVote);
 		minVoteSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
@@ -122,7 +140,7 @@ public class GroupManagementActivity extends Activity {
 			@Override public void onStartTrackingTouch(SeekBar seekBar){}
 			@Override
 			public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
-				infoView.setText(progress+"%");
+				voteInfo.setText(progress+"%");
 			}
 		});
 		
