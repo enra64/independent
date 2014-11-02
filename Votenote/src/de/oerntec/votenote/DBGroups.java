@@ -175,9 +175,9 @@ public class DBGroups{
 	 * returns a cursor with all 
 	 * @return
 	 */
-	public Cursor allGroupNamesAndMinvotes(){
+	public Cursor allGroupsAllInfo(){
 		//sort cursor by name to have a defined reihenfolg
-		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN, UEBUNG_MINVOTE_COLUMN};
+		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN, UEBUNG_MINVOTE_COLUMN, UEBUNG_MIN_PRESPOINTS_COLUMN};
 		Cursor mCursor = database.query(true, TABLE, cols, null, null, null, null, ID_COLUMN+" DESC", null);  
 		if (mCursor != null)
 			mCursor.moveToFirst();
