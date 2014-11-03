@@ -37,7 +37,7 @@ public class DBGroups{
 	}
 	
 	/**
-	 * Delete the group with the given name
+	 * Delete the group with the given name AND the given id
 	 * @param groupName Name of the group to delete
 	 * @return Number of affected rows.
 	 */
@@ -189,13 +189,26 @@ public class DBGroups{
 	 * @return the cursor
 	 */
 	public Cursor groupAt(int id){
-		//sort cursor by name to have a defined reihenfolg
 		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN};
 		String[] whereArgs = new String[] {String.valueOf(id)};
 		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=?", whereArgs, null, null, null, null);  
 		if (mCursor != null)
 			mCursor.moveToFirst();
 		return mCursor; // iterate to get each value.
+	}
+	
+	/**
+	 * Return the name of the group with the specified id
+	 */
+	public String groupName(int dbID){
+		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN};
+		String[] whereArgs = new String[] {String.valueOf(dbID)};
+		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=?", whereArgs, null, null, null, null);  
+		if (mCursor != null)
+			mCursor.moveToFirst();
+		String answer=mCursor.getString(1);
+		mCursor.close();
+		return answer;
 	}
 	
 
@@ -215,23 +228,40 @@ public class DBGroups{
 		String[] whereArgs={String.valueOf(idOfNameToChange)};
 		int affectedRows=database.update(TABLE, values, ID_COLUMN+"=?", whereArgs);
 		Log.i("dbentries:changegroupname", "changed "+affectedRows+" entries");
-		return 1;
+		return affectedRows;
 	}
 	
-	public void deleteGroupAtPos(int deletePosition) {
-		//get name at position in cursor
+	/**
+	 * Change oldName with database ID dbId to newName
+	 * @param dbID database id concerned
+	 * @param oldName old name for security
+	 * @param newName new name
+	 * @return num of affected rows
+	 */
+	public int changeName(int dbID, String oldName, String newName){
 		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN};
-		Cursor mCursor = database.query(true, TABLE, cols, null, null, null, null, ID_COLUMN+" DESC", null);
-		if (mCursor != null)
+		String[] whereArgs = new String[] {String.valueOf(dbID), oldName};
+		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=? AND "+UEBUNG_TYP_COLUMN+"=?", whereArgs, null, null, ID_COLUMN+" DESC", null);  
+		if (mCursor != null&&mCursor.getCount()!=0){
 			mCursor.moveToFirst();
-		mCursor.moveToPosition(deletePosition);
-		//get name and id for safety reasons
-		int deleteId=mCursor.getInt(0);
-		String deleteName=mCursor.getString(1);
-		mCursor.close();
-
-		deleteRecord(deleteName, deleteId);
+			ContentValues values = new ContentValues();
+			values.put(UEBUNG_TYP_COLUMN, newName);
+			if(mCursor.getString(1).equals(oldName)){
+				mCursor.close();
+				return database.update(TABLE, values, ID_COLUMN+"=? AND "+UEBUNG_TYP_COLUMN+"=?", whereArgs);
+			}
+			else{
+				Log.e("dbgroups:changename", "namecheck failed");
+				mCursor.close();
+				return -1;
+			}
+		}
+		else{//cursor that should contain old name and id is empty -> group does not exist
+			mCursor.close();
+			return -1;
+		}
 	}
+		
 	
 	/**
 	 * Returns the minimum Vote needed for passing from db

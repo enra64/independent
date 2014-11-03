@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_add_entry"
         android:icon="@drawable/ic_action_new_entry"
-        android:showAsAction="withText|ifRoom"
+        android:showAsAction="ifRoom"
         android:title="Neuer Eintrag"/>
     <!--
     <item
@@ -19,7 +19,8 @@
         android:title="Übungen verwalten"/>
     <item
         android:id="@+id/action_prespoints"
-        android:showAsAction="never"
+                android:icon="@drawable/ic_action_prespoints"
+        android:showAsAction="ifRoom"
         android:title="Punkte verwalten"/>
 
 </menu>

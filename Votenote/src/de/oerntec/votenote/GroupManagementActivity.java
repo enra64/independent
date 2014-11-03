@@ -41,12 +41,18 @@ public class GroupManagementActivity extends Activity {
 		 * handle if first group: show dialog
 		 * get savedinstance state, 
 		 */
-		if(getIntent().getExtras().getBoolean("firstGroup", false)){
-			Builder b=new AlertDialog.Builder(this);
-		    b.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-		        public void onClick(DialogInterface dialog, int whichButton) {}
-		    }).setTitle("Erste Übung")
-		    .setMessage("Tippe auf das Plus um die Übung zu erstellen").create().show();
+		//safety
+		Bundle extras=getIntent().getExtras();
+		if(extras!=null){
+			if(extras.getBoolean("firstGroup", false)){
+				Builder b=new AlertDialog.Builder(this);
+				b.setTitle("Tutorial");
+				b.setView(this.getLayoutInflater().inflate(R.layout.dialog_firstgroup_notification, null));
+			    b.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {}
+			    });
+			    b.create().show();
+			}
 		}
 		//get db
 		groupsDB=new DBGroups(this);
@@ -78,7 +84,7 @@ public class GroupManagementActivity extends Activity {
 		mainList.setOnItemClickListener(new OnItemClickListener(){
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
-				Log.i("gmanage", "handling listview click on "+view.toString());
+				Log.d("gmanage", "handling listview click on "+view.toString());
 				showNameActionsDialog(position);
 			}
 		});
@@ -107,10 +113,9 @@ public class GroupManagementActivity extends Activity {
 	protected void showChangeDialog(final int pos) {
 		final int databaseID=groupsDB.translateDrawerSelectionToDBID(pos);
 		//get old name
-		Cursor allCursor=groupsDB.allGroupNames();
-		allCursor.moveToPosition(pos);
-		final String oldName=allCursor.getString(1);
-		allCursor.close();
+		Cursor groupNameCursor=groupsDB.groupAt(databaseID);
+		final String oldName=groupNameCursor.getString(1);
+		groupNameCursor.close();
 		
 		//inflate view with seekbar and name
 		final View input=this.getLayoutInflater().inflate(R.layout.dialog_newgroup, null);
@@ -161,13 +166,17 @@ public class GroupManagementActivity extends Activity {
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
 	        	//change minimum vote, pres value
-	            groupsDB.setMinVote(databaseID, minVoteSeek.getProgress());
+	        	if(groupsDB.setMinVote(databaseID, minVoteSeek.getProgress())!=1)
+	        		Log.e("groupmanager:minv", "did not update only or at least one row");
 	            if(groupsDB.setMinPresPoints(databaseID, minPresSeek.getProgress())!=1)
-	            	Log.e("groupmanager", "did not update one row");
-	            //change group name if it changed
+	            	Log.e("groupmanager:minpres", "did not update only or at least one row");
+	            
+	            //change group NAME if it changed
 	            String newName = nameInput.getText().toString();
-	            if(!newName.equals(oldName)&&newName!="")
-	            	groupsDB.changePositionTO(databaseID, newName);
+	            Log.d("groupmanager", "trying to update name of "+oldName+" to "+newName);
+	            if(!newName.equals(oldName)&&newName!=""){
+	            	groupsDB.changeName(databaseID, oldName, newName);
+	            }
 	            groupAdapter.swapCursor(groupsDB.allGroupsAllInfo()).close();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
@@ -177,19 +186,15 @@ public class GroupManagementActivity extends Activity {
 
 	protected void showDeleteDialog(final int deletePosition) {
 		//get name of the group supposed to be deleted
-		Cursor allCursor=groupsDB.allGroupNames();
-		allCursor.moveToPosition(deletePosition);
-		String groupName=allCursor.getString(1);
-		final int confirmedGroupID=allCursor.getInt(0);
-		allCursor.close();
-		
+		final int databaseID=groupsDB.translateDrawerSelectionToDBID(deletePosition);
+		final String groupName=groupsDB.groupName(databaseID);
 		//request confirmation
 		new AlertDialog.Builder(this)
 	    .setTitle(groupName+" löschen?")
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
-	        	groupsDB.deleteGroupAtPos(deletePosition);
-	        	entriesDB.deleteAllEntriesForGroup(confirmedGroupID);
+	        	groupsDB.deleteRecord(groupName, databaseID);
+	        	entriesDB.deleteAllEntriesForGroup(databaseID);
 	        	groupAdapter.swapCursor(groupsDB.allGroupsAllInfo()).close();
 	        }
 	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {

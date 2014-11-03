@@ -95,9 +95,8 @@ public Cursor getEntry(int uebungTyp, int uebungNummer){
 }
 
 public void deleteAllEntriesForGroup(int groupId) {
-	String whereClause = UEBUNG_TYP_COLUMN+"=?";
 	String[] whereArgs = new String[] {String.valueOf(groupId)};
-	int checkValue=database.delete(TABLE, whereClause , whereArgs);
+	int checkValue=database.delete(TABLE, UEBUNG_TYP_COLUMN+"=?" , whereArgs);
 	Log.i("dbgroups:delete", "deleting all "+checkValue+" entries of type "+groupId);
 }
 

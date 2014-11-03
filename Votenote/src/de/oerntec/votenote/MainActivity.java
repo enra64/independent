@@ -289,7 +289,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         myVote.setValue(minVoteValue);
         
         //set the current values of the picers as explanation text
-        infoView.setText(myVote.getValue()+" von "+maxVote.getValue()+" Votes");
+        infoView.setText(myVote.getValue()+" von "+maxVote.getValue()+" Votierungen");
         infoView.setTextColor(Color.argb(255, 153, 204, 0));//green
         
        //add change listener to update dialog expl. if pickers changed
@@ -298,7 +298,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 		public void onValueChange(NumberPicker thisPicker, int arg1, int newVal) {
 			int myVoteValue=newVal;
     		int maxVoteValue=maxVote.getValue();
-			infoView.setText(myVoteValue+" von "+maxVoteValue+" Votes");
+			infoView.setText(myVoteValue+" von "+maxVoteValue+" Votierungen");
 			if(maxVoteValue>=myVoteValue)
 				infoView.setTextColor(Color.argb(255, 153, 204, 0));//green
 			else
@@ -309,7 +309,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			public void onValueChange(NumberPicker thisPicker, int arg1, int newVal) {
         	int myVoteValue=myVote.getValue();
     		int maxVoteValue=newVal;
-			infoView.setText(myVoteValue+" von "+maxVoteValue+" Votes");
+			infoView.setText(myVoteValue+" von "+maxVoteValue+" Votierungen");
 			if(maxVoteValue>=myVoteValue)
 				infoView.setTextColor(Color.argb(255, 153, 204, 0));//green
 			else
@@ -319,7 +319,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         
         //build alertdialog
 		new AlertDialog.Builder(this)
-	    .setTitle("Neuer Eintrag")
+	    .setTitle("Neue Übungsnotiz")
 	    .setView(pickView)
 	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
