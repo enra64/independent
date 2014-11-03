@@ -37,6 +37,17 @@ public class GroupManagementActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_group_management);
 		
+		/*
+		 * handle if first group: show dialog
+		 * get savedinstance state, 
+		 */
+		if(getIntent().getExtras().getBoolean("firstGroup", false)){
+			Builder b=new AlertDialog.Builder(this);
+		    b.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		        public void onClick(DialogInterface dialog, int whichButton) {}
+		    }).setTitle("Erste Übung")
+		    .setMessage("Tippe auf das Plus um die Übung zu erstellen").create().show();
+		}
 		//get db
 		groupsDB=new DBGroups(this);
 		entriesDB=new DBEntries(this);
