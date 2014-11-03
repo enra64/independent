@@ -383,8 +383,18 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			final TextView averageView=(TextView) rootView.findViewById(R.id.voteAverage);
 			final TextView presPointView=(TextView) rootView.findViewById(R.id.mainPrespointView);
 			
+			
 			//if translatedSection is -1, no group has been added yet
-			if(databaseID!=DBGroups.NO_GROUPS_EXIST){
+			if(databaseID==DBGroups.NO_GROUPS_EXIST){
+				Intent intent = new Intent(getActivity(), GroupManagementActivity.class);
+				intent.putExtra("firstGroup", true);
+				startActivity(intent);
+				//old idea
+				//createGroupDialog(getActivity(), true);
+				//reload drawer...
+				//averageView.setText("Füge einen Eintrag hinzu");
+			}
+			else{
 				Log.i("votenote main", "displaying entries for group "+databaseID+" (according to group db)");
 				
 				/* PRESENTATION POINTS INFO
@@ -502,11 +512,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				
 				//set summaryView to average
 				setVoteAverage(databaseID, averageView);
-			}
-			else{
-				createGroupDialog(getActivity(), true);
-				//reload drawer...
-				averageView.setText("Füge einen Eintrag hinzu");
 			}
 			return rootView;
 		}
