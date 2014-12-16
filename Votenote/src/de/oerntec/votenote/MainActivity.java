@@ -62,11 +62,14 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
 		
 		//database access
 		groupDB=new DBGroups(this);
 		entryDB=new DBEntries(this);
+		
+		//to avoid calling groupDB before having it started, setting the view has been
+		//moved here
+		setContentView(R.layout.activity_main);
 		
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
 		mTitle = getTitle();
@@ -135,11 +138,8 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				Intent intent = new Intent(this, GroupManagementActivity.class);
 				startActivity(intent);
 				break;
-			case R.id.action_add_group:
-				createGroupDialog(this, false);
-				break;
 			case R.id.action_add_entry:
-				createEntryDialog(groupID, true, 0);
+				createEntryDialog(groupID, 0);
 				break;
 			case R.id.action_prespoints:
 				createPresPointsDialog(groupID);
@@ -188,71 +188,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 		b.setTitle("Erreichte Präsentationspunkte");
 		b.create().show();
 	}
-
-	/**
-	 * Creates the Dialog responsible for asking the user the name
-	 * @param context Context to use
-	 * @param firstGroup Whether we are creating the users first group
-	 */
-	private static void createGroupDialog(final Context context, boolean firstGroup){
-		//inflat view with seekbar and name
-		final View input=((Activity) context).getLayoutInflater().inflate(R.layout.dialog_newgroup, null);
-		final EditText nameInput=(EditText) input.findViewById(R.id.editNewName);
-		final TextView presInfo=(TextView) input.findViewById(R.id.dialogNewGroupMinPresInfoText);
-		final SeekBar minPresSeek=(SeekBar) input.findViewById(R.id.dialogNewGroupPresSeek);
-		final TextView infoView=(TextView) input.findViewById(R.id.minVotInfoText);
-		final SeekBar minVoteSeek=(SeekBar) input.findViewById(R.id.newMinVotSeek);
-		nameInput.setHint("Übungsname");
-		
-		//minpresseek
-		presInfo.setText("2");
-		
-		minPresSeek.setMax(5);
-		minPresSeek.setProgress(2);
-		minPresSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
-			@Override public void onStopTrackingTouch(SeekBar seekBar) {}       
-			@Override public void onStartTrackingTouch(SeekBar seekBar){}
-			@Override
-			public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
-				presInfo.setText(String.valueOf(progress));
-			}
-		});
-		
-		//minvot seek
-		minVoteSeek.setMax(100);
-		minVoteSeek.setProgress(50);
-		minVoteSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {       
-			@Override public void onStopTrackingTouch(SeekBar seekBar) {}       
-			@Override public void onStartTrackingTouch(SeekBar seekBar){}
-			@Override
-			public void onProgressChanged(SeekBar arg0, int progress, boolean arg2) {
-				infoView.setText(progress+"%");
-			}
-		});
-		
-		/* NEWGROUP ALERTDIALOG
-		 * build it now
-		 */
-		Builder b=new AlertDialog.Builder(context)
-	    .setView(input)
-	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int whichButton) {
-	            String name = nameInput.getText().toString();
-	            if(groupDB.addGroup(name, minVoteSeek.getProgress(), minPresSeek.getProgress())==-1)
-	            	Toast.makeText(context, "Übung existiert schon", Toast.LENGTH_SHORT).show();
-	            else
-	            	mNavigationDrawerFragment.forceReload();
-	        }
-	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int whichButton) {}
-	    });
-		if(firstGroup){
-			b.setTitle("Erste Übung erstellen")
-			.setMessage("Bitte Übung anwählen");
-		}
-		else
-			b.setTitle("Übung erstellen");
-		b.create().show();
-	}
 	
 	/**
 	 * Dialog for creating an entry
@@ -260,20 +195,11 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 	 * @param add
 	 * @param uebungNummer
 	 */
-	private void createEntryDialog(final int groupID, boolean add, int uebungNummer){
-		//if we add this entry, we use these values;
-		int maxVoteValue=0, minVoteValue=0;
-		if(add){
-			maxVoteValue=entryDB.getPrevMaxVote(groupID);
-			minVoteValue=3;
-		}
-		//else we have to get them from the database
-		else{
-			Cursor oldValues=entryDB.getEntry(groupID, uebungNummer);
-			maxVoteValue=oldValues.getInt(1);
-			minVoteValue=oldValues.getInt(0);
-			oldValues.close();
-		}
+	private void createEntryDialog(final int groupID, int uebungNummer){
+		//adding entry, use values put in last
+		int maxVoteValue=entryDB.getPrevMaxVote(groupID);
+		int minVoteValue=entryDB.getPrevVote(groupID);
+		
 		//inflate view, find the textview containing the explanation
 		final View pickView=this.getLayoutInflater().inflate(R.layout.dialog_new_entry, null);
 		final TextView infoView=(TextView) pickView.findViewById(R.id.infoTextView);
@@ -382,6 +308,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			ListView voteList=(ListView) rootView.findViewById(R.id.voteList);
 			final TextView averageView=(TextView) rootView.findViewById(R.id.voteAverage);
 			final TextView presPointView=(TextView) rootView.findViewById(R.id.mainPrespointView);
+			final TextView averageVotesNeededView=(TextView) rootView.findViewById(R.id.textViewAverageNeededVotes);
 			
 			
 			//if translatedSection is -1, no group has been added yet
@@ -389,10 +316,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				Intent intent = new Intent(getActivity(), GroupManagementActivity.class);
 				intent.putExtra("firstGroup", true);
 				startActivity(intent);
-				//old idea
-				//createGroupDialog(getActivity(), true);
-				//reload drawer...
-				//averageView.setText("Füge einen Eintrag hinzu");
 			}
 			else{
 				Log.i("votenote main", "displaying entries for group "+databaseID+" (according to group db)");
@@ -413,7 +336,14 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				//make view invisible if no presentations are required
 				if(minPresPoints==0)
 					presPointView.setVisibility(View.INVISIBLE);
-
+				
+				//calculate how many work you need to do per uebung to achieve
+				//minimum votation
+				//need: current work done, maximum doable work, needed percentage of work
+				int maximumDoableWork=groupDB.getMaxWorkForGroup(databaseID);
+				int currentDoneWork = setVoteAverage(databaseID, averageView, true);
+				int neededPercentage = groupDB.getMinVote(databaseID);
+				
 				/* ALLENTRY LISTVIEW
 				 * create the listview adapter responsible for showing all group entries
 				 */
@@ -470,7 +400,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 					        		entryDB.changeEntry(databaseID, translatedPosition, maxVote.getValue(), myVote.getValue());
 									//reload list- and textview; close old cursor
 					        		groupAdapter.swapCursor(entryDB.getGroupRecords(databaseID)).close();
-					        		setVoteAverage(databaseID, averageView);
+					        		setVoteAverage(databaseID, averageView, false);
 					        	}
 					        	else
 					        		Toast.makeText(getActivity(), "Mehr votiert als möglich!", Toast.LENGTH_SHORT).show();
@@ -511,7 +441,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 				});
 				
 				//set summaryView to average
-				setVoteAverage(databaseID, averageView);
+				setVoteAverage(databaseID, averageView, false);
 			}
 			return rootView;
 		}
@@ -519,7 +449,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 		/*
 		 * calculate the average of votings vs how much you need
 		 */
-		private void setVoteAverage(int forSection, TextView affectView){
+		private int setVoteAverage(int forSection, TextView affectView, boolean onlyReturnAverage){
 			//logging b/c i am slightly retarded
 			Log.i("votenote:calcavg", "calculating average for section "+forSection);
 			//get avg cursor
@@ -545,13 +475,15 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 			//get minvote for section
 			int minVote=groupDB.getMinVote(forSection);
 			
-			//write percentage and color coding to summaryview
-			affectView.setText(avg+"%");
-			
-			if(avg>=minVote)
-				affectView.setTextColor(Color.argb(255, 153, 204, 0));//green
-			else
-				affectView.setTextColor(Color.argb(255, 204, 0, 0));//red
+			if(!onlyReturnAverage){
+				//write percentage and color coding to summaryview
+				affectView.setText(avg+"%");
+				if(avg>=minVote)
+					affectView.setTextColor(Color.argb(255, 153, 204, 0));//green
+				else
+					affectView.setTextColor(Color.argb(255, 204, 0, 0));//red
+			}
+			return avg;
 		}
 		
 		@Override

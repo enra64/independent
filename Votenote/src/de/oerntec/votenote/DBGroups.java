@@ -30,6 +30,8 @@ public class DBGroups{
 	public final static String UEBUNG_MINVOTE_COLUMN=DatabaseCreator.GROUPS_MIN_VOTE;  // name of employee
 	public final static String UEBUNG_PRESPOINTS_COLUMN=DatabaseCreator.GROUPS_PRESENTATIONPOINTS;  // name of employee
 	public final static String UEBUNG_MIN_PRESPOINTS_COLUMN=DatabaseCreator.GROUPS_MIN_PRESENTATIONPOINTS;  // name of employee
+	public final static String GROUPS_COUNT_UEBUNGS=DatabaseCreator.GROUPS_COUNT_UEBUNGS;
+	public final static String GROUPS_MAXVOTES_PER_UEBUNG=DatabaseCreator.GROUPS_MAXVOTES_PER_UEBUNG;
 	
 	public DBGroups(Context context){
 	    dbHelper = new DatabaseCreator(context);
@@ -189,12 +191,35 @@ public class DBGroups{
 	 * @return the cursor
 	 */
 	public Cursor groupAt(int id){
-		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN};
+		String[] cols = new String[] {ID_COLUMN, UEBUNG_TYP_COLUMN, GROUPS_COUNT_UEBUNGS, GROUPS_MAXVOTES_PER_UEBUNG};
 		String[] whereArgs = new String[] {String.valueOf(id)};
 		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=?", whereArgs, null, null, null, null);  
 		if (mCursor != null)
 			mCursor.moveToFirst();
 		return mCursor; // iterate to get each value.
+	}
+	
+	public void setTotalUebungCountAndWorkPerUebung(int groupID, int newTotalCount, int newWorkPerUebung){
+		ContentValues values = new ContentValues();
+		values.put(GROUPS_COUNT_UEBUNGS, newTotalCount);
+		values.put(GROUPS_MAXVOTES_PER_UEBUNG, newWorkPerUebung);
+		
+		database.update(TABLE, values, ID_COLUMN+"=?", new String[] {String.valueOf(groupID)});
+	}
+	
+	/**
+	 * Returns the amount of uebungs you could go to at maximum
+	 * @return the cursor
+	 */
+	public int getMaxWorkForGroup(int id){
+		String[] cols = new String[] {ID_COLUMN, GROUPS_COUNT_UEBUNGS, GROUPS_MAXVOTES_PER_UEBUNG};
+		String[] whereArgs = new String[] {String.valueOf(id)};
+		Cursor mCursor = database.query(true, TABLE, cols, ID_COLUMN+"=?", whereArgs, null, null, null, null);  
+		if (mCursor != null)
+			mCursor.moveToFirst();
+		int answer=mCursor.getInt(1) * mCursor.getInt(2);
+		mCursor.close();
+		return answer; // iterate to get each value.
 	}
 	
 	/**

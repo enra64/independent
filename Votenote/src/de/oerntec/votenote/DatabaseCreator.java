@@ -41,6 +41,8 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     public static final String GROUPS_MIN_VOTE="uebung_minvote";
     public static final String GROUPS_PRESENTATIONPOINTS="uebung_prespoints";
     public static final String GROUPS_MIN_PRESENTATIONPOINTS="uebung_max_prespoints";
+    public static final String GROUPS_COUNT_UEBUNGS="uebung_count";
+    public static final String GROUPS_MAXVOTES_PER_UEBUNG="uebung_maxvotes_per_ueb";
     
     public static final String TABLE_NAME_GROUPS="uebungen_gruppen";
     
@@ -49,6 +51,8 @@ public class DatabaseCreator extends SQLiteOpenHelper {
     		GROUPS_NAMEN+" string not null," +
     		GROUPS_MIN_VOTE+" integer DEFAULT 50,"+
     		GROUPS_PRESENTATIONPOINTS + " integer DEFAULT 0,"+
+    		GROUPS_COUNT_UEBUNGS + " integer DEFAULT 12,"+
+    		GROUPS_MAXVOTES_PER_UEBUNG + " integer DEFAULT 12,"+
     		GROUPS_MIN_PRESENTATIONPOINTS + " integer DEFAULT 2);";
 
     public DatabaseCreator(Context context) {
@@ -71,6 +75,10 @@ public class DatabaseCreator extends SQLiteOpenHelper {
         if(newVersion==12){
         	Log.i("database:creator", "changed to "+newVersion+" from "+oldVersion);
         	database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" ADD "+GROUPS_MIN_PRESENTATIONPOINTS+" INTEGER DEFAULT 2");
+        }
+        if(oldVersion==12){
+        	database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" ADD "+GROUPS_COUNT_UEBUNGS+" INTEGER DEFAULT 12");
+        	database.execSQL("ALTER TABLE "+TABLE_NAME_GROUPS+" ADD "+GROUPS_MAXVOTES_PER_UEBUNG+" INTEGER DEFAULT 5");
         }
     }
 }

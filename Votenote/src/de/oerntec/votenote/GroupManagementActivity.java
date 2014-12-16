@@ -7,6 +7,7 @@ import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,11 +16,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.NumberPicker.OnValueChangeListener;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 @SuppressLint("InflateParams")
@@ -220,6 +223,66 @@ public class GroupManagementActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.group_management, menu);
 		return true;
+	}
+	
+	/**
+	 * Dialog for setting the maximum vote amount
+	 * by setting the uebung count and the estimated count of votes per
+	 * uebung
+	 */
+	private void setMaximumAchievableVotesDialog(final int groupID, int uebungNummer){
+		//load previously set values for uebung count and work per uebung
+		Cursor oldValCursor = groupsDB.groupAt(groupID);
+		int totalUebungCount=oldValCursor.getInt(2);
+		int workPerUebung=oldValCursor.getInt(3);
+		
+		//inflate view, find the textview containing the explanation
+		final View pickView=this.getLayoutInflater().inflate(R.layout.dialog_set_max_possible_votes, null);
+		final TextView infoView=(TextView) pickView.findViewById(R.id.infoTextView);
+		
+		//find and configure the number pickers
+        final NumberPicker totalUebungCountPicker=(NumberPicker) pickView.findViewById(R.id.pickerUebungCount);
+        totalUebungCountPicker.setMinValue(0);
+        totalUebungCountPicker.setMaxValue(20);
+        totalUebungCountPicker.setValue(workPerUebung);
+        final NumberPicker workPerUebungPicker=(NumberPicker) pickView.findViewById(R.id.pickerWorkPerUebung);
+        workPerUebungPicker.setMinValue(0);
+        workPerUebungPicker.setMaxValue(15);
+        workPerUebungPicker.setValue(totalUebungCount);
+        
+        //set the current values of the picers as explanation text
+        infoView.setText(workPerUebungPicker.getValue()+" Aufgaben pro Übung,\n"+
+        		totalUebungCountPicker.getValue()+" Übungen insgesamt");
+        
+       //add change listener to update dialog expl. if pickers changed
+        workPerUebungPicker.setOnValueChangedListener (new OnValueChangeListener() {
+        @Override
+		public void onValueChange(NumberPicker thisPicker, int arg1, int newWorkPerUebung) {
+    		int totalUebungCount=totalUebungCountPicker.getValue();
+	        infoView.setText(newWorkPerUebung+" Aufgaben pro Übung,\n"+
+	        		totalUebungCount+" Übungen insgesamt");
+		}
+        });
+        totalUebungCountPicker.setOnValueChangedListener(new OnValueChangeListener() {@Override
+			public void onValueChange(NumberPicker thisPicker, int arg1, int newTotalUebungCount) {
+        	int newWorkPerUebung=workPerUebungPicker.getValue();
+	        infoView.setText(newWorkPerUebung+" Aufgaben pro Übung,\n"+
+	        		newTotalUebungCount+" Übungen insgesamt");
+			}
+        });
+        
+        //build alertdialog
+		new AlertDialog.Builder(this)
+	    .setTitle("Maximal erreichbare Zahl")
+	    .setView(pickView)
+	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int whichButton) {
+	        	//does what the name says...
+	            groupsDB.setTotalUebungCountAndWorkPerUebung(groupID, totalUebungCountPicker.getValue(), workPerUebungPicker.getValue());
+	        }
+	    }).setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int whichButton) {}
+	    }).show();
 	}
 	
 	/**
